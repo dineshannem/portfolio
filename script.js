@@ -2,14 +2,27 @@
 const sidebar = document.getElementById("sidebar");
 const cornerBtn = document.getElementById("cornerBtn");
 const themeBtn = document.getElementById("themeToggle");
+const themeIcon = document.getElementById("themeIcon");
+const heroAvatar = document.getElementById("heroAvatar");
 const form = document.getElementById("contactForm");
 const statusEl = document.getElementById("formStatus");
 const yearEl = document.getElementById("year");
 
-/* ---------------- Sidebar open/close + outside click ---------------- */
+/* ---------------- Sidebar open/close + outside click + accessibility ---------------- */
 function toggleSidebar() {
   const opened = sidebar.classList.toggle("open");
-  sidebar.setAttribute("aria-hidden", !opened);
+  sidebar.setAttribute("aria-hidden", String(!opened));
+  cornerBtn.setAttribute("aria-expanded", String(opened));
+
+  if (opened) {
+    // focus first interactive element in sidebar
+    const focusable = sidebar.querySelector(
+      'a, button, input, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusable && focusable.focus();
+  } else {
+    cornerBtn.focus();
+  }
 }
 window.toggleSidebar = toggleSidebar;
 
@@ -21,24 +34,48 @@ document.addEventListener("click", (e) => {
   if (!clickInside) {
     sidebar.classList.remove("open");
     sidebar.setAttribute("aria-hidden", "true");
+    cornerBtn.setAttribute("aria-expanded", "false");
   }
 });
 
-/* ---------------- Theme toggle with persistence ---------------- */
+// Close on Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && sidebar.classList.contains("open")) toggleSidebar();
+});
+
+/* ---------------- Theme toggle with persistence & image switching ---------------- */
 const root = document.documentElement;
+
+function updateThemeImages(theme) {
+  // hero/profile images that have data-dark-src / data-light-src
+  document.querySelectorAll("[data-dark-src]").forEach((img) => {
+    const src = img.getAttribute(`data-${theme}-src`);
+    if (src) img.src = src;
+  });
+  // theme icon showing the current theme image
+  if (themeIcon) {
+    themeIcon.src = theme === "dark" ? "dark.jpg" : "light.jpg";
+    themeIcon.alt = theme === "dark" ? "dark theme" : "light theme";
+  }
+}
+
 function setTheme(theme) {
   root.setAttribute("data-theme", theme);
-  if (themeBtn) themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
   localStorage.setItem("site-theme", theme);
+  updateThemeImages(theme);
 }
-themeBtn &&
+
+if (themeBtn) {
   themeBtn.addEventListener("click", () => {
     const current = root.getAttribute("data-theme") || "dark";
     setTheme(current === "dark" ? "light" : "dark");
   });
-// load saved theme
+}
+
+// load saved theme (default dark)
 const saved = localStorage.getItem("site-theme");
 if (saved) setTheme(saved);
+else setTheme("dark");
 
 /* ---------------- Reveal-on-scroll (IntersectionObserver) ---------------- */
 const io = new IntersectionObserver(
@@ -85,15 +122,23 @@ function eraseLoop() {
 }
 document.addEventListener("DOMContentLoaded", () => setTimeout(typeLoop, 400));
 
-/* ---------------- Project Read More toggles ---------------- */
+/* ---------------- Project Read More toggles (improved, accessible) ---------------- */
 document.querySelectorAll(".project-card").forEach((card) => {
   const btn = card.querySelector(".read-more");
   const more = card.querySelector(".more");
   if (!btn || !more) return;
+
+  // Ensure there is a data-open attribute
+  if (!more.hasAttribute("data-open")) more.setAttribute("data-open", "false");
+
+  // Accessibility
+  btn.setAttribute("aria-expanded", "false");
+
   btn.addEventListener("click", () => {
     const open = more.getAttribute("data-open") === "true";
     more.setAttribute("data-open", open ? "false" : "true");
     btn.textContent = open ? "Read more" : "Read less";
+    btn.setAttribute("aria-expanded", String(!open));
   });
 });
 
@@ -102,9 +147,11 @@ if (form) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!statusEl) return;
+    statusEl.classList.remove("error");
     statusEl.textContent = "";
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn && submitBtn.classList.add("loading");
+    submitBtn && (submitBtn.disabled = true);
 
     try {
       const data = new FormData(form);
@@ -115,18 +162,22 @@ if (form) {
       });
       if (res.ok) {
         statusEl.textContent =
-          "✅  Thank you --Message sent — dinesh will respond very shortly .";
+          " Thank you — message sent. Dinesh will respond shortly as soon as possible .";
         form.reset();
       } else {
         const json = await res.json().catch(() => ({}));
-        statusEl.textContent =
+        const errMsg =
           json?.errors?.map((x) => x.message).join(", ") ||
           "⚠️ Submission failed. Try again.";
+        statusEl.textContent = errMsg;
+        statusEl.classList.add("error");
       }
     } catch (err) {
       statusEl.textContent = "⚠️ Network error. Try again.";
+      statusEl.classList.add("error");
     } finally {
       submitBtn && submitBtn.classList.remove("loading");
+      submitBtn && (submitBtn.disabled = false);
     }
   });
 }
