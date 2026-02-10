@@ -2,6 +2,12 @@
 :root {
   --bg: #0d1117;
   --panel: #12151b;
+  /* header background (slightly more opaque to avoid visual overlap) */
+  --header-bg: rgba(18, 21, 27, 0.96);
+  /* animation tokens */
+  --reveal-duration: 620ms;
+  --reveal-ease: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --reveal-offset: 10px;
   --muted: #9aa4ad;
   --text: #e6edf3;
   --accent: #58a6ff;
@@ -23,8 +29,15 @@ html[data-theme="light"] {
 }
 body {
   margin: 0;
-  font-family: Inter, system-ui, -apple-system, "Poppins", Roboto, Segoe UI,
-    Arial, sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    "Poppins",
+    Roboto,
+    Segoe UI,
+    Arial,
+    sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
@@ -36,17 +49,19 @@ body {
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 90;
+  z-index: 80; /* keep below the sidebar which overlaps */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
   gap: 2.5rem;
-  background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0));
+  /* stronger header background so it doesn't visually blend/overlap with the sidebar */
+  background: linear-gradient(180deg, var(--header-bg), rgba(0, 0, 0, 0));
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 .brand {
   display: flex;
+  background-color: #d0d3d600;
   flex-direction: column;
   min-width: 260px;
 }
@@ -54,6 +69,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.4px;
   font-size: 1rem;
+  border-left: 120rem;
   padding-left: 3rem;
 }
 .brand-sub {
@@ -86,9 +102,6 @@ body {
   cursor: pointer;
   text-decoration: none;
   font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 .btn.ghost {
   background: transparent;
@@ -101,25 +114,20 @@ body {
   border: none;
 }
 
-/* Theme toggle (circle with image) */
+/* Theme toggle (circle) */
 .theme-btn {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   border: none;
-  background: var(--panel);
+  background: var(--accent);
   display: grid;
   place-items: center;
   cursor: pointer;
   font-size: 16px;
-  transition: transform 0.22s, box-shadow 0.22s;
-  padding: 6px;
-}
-.theme-btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
+  transition:
+    transform 0.22s,
+    box-shadow 0.22s;
 }
 .theme-btn:hover {
   transform: scale(1.06);
@@ -139,6 +147,15 @@ body {
   color: var(--text);
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38);
+}
+/* when hidden (sidebar open), make the corner button invisible and non-interactive */
+.corner-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px) scale(0.98);
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
 }
 .sidebar {
   position: fixed;
@@ -166,6 +183,8 @@ body {
   color: var(--muted);
   font-size: 18px;
   cursor: pointer;
+  /* ensure the close control is above other sidebar content and clickable */
+  z-index: 220;
 }
 .sidebar-header {
   display: flex;
@@ -179,6 +198,7 @@ body {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--accent);
+  display: block;
 }
 .sidebar-meta h3 {
   margin: 0;
@@ -210,20 +230,6 @@ body {
   color: var(--accent);
 }
 
-/* Sidebar skills block */
-.sidebar-skills .sidebar-block {
-  padding: 0.6rem;
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-.list.compact {
-  margin-left: 1rem;
-  color: var(--muted);
-  padding-left: 0.3rem;
-  font-size: 0.95rem;
-}
-
 /* ---------------- Hero ---------------- */
 .hero {
   display: grid;
@@ -242,6 +248,7 @@ body {
   object-fit: cover;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
   animation: float 3s ease-in-out infinite;
+  display: block;
 }
 @keyframes float {
   0%,
@@ -259,6 +266,26 @@ body {
 .lead {
   color: var(--muted);
   margin-top: 0.25rem;
+  /* reserve vertical space to avoid layout jump when typing/lead reveal happens */
+  min-height: 2.1rem; /* adjust if your lead spans more lines */
+  transition: opacity 0.45s ease; /* avoid translate-based movement */
+}
+
+/* Typing element: keep a fixed minimum width so the container won't reflow during typing */
+.typing {
+  display: inline-block;
+  /* reserve exact space from JS via --typing-min; fallback to 18ch */
+  min-width: var(--typing-min, 18ch);
+  /* reserve vertical space (set by JS) so adding/removing text doesn't push content
+     - fallback to a single-line height to avoid jumps on small screens */
+  min-height: var(--typing-min-height, 1.2em);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  /* use a monospace fallback to keep character widths stable during typing */
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New",
+    monospace;
 }
 .cta {
   margin-top: 1rem;
@@ -292,7 +319,9 @@ body {
   border-radius: 999px;
   color: var(--text);
   border: 1px solid rgba(255, 255, 255, 0.03);
-  transition: transform 0.18s, box-shadow 0.18s;
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s;
 }
 .chip:hover {
   transform: translateY(-4px);
@@ -316,7 +345,9 @@ body {
   border-radius: 12px;
   margin: 1rem 0;
   border: 1px solid rgba(255, 255, 255, 0.03);
-  transition: transform 0.25s, box-shadow 0.25s;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s;
 }
 .project-card:hover {
   transform: translateY(-6px);
@@ -330,12 +361,10 @@ body {
   color: var(--muted);
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.45s ease, padding 0.25s ease;
-  padding-top: 0;
+  transition: max-height 0.45s ease;
 }
 .more[data-open="true"] {
-  max-height: 1000px;
-  padding-top: 0.6rem;
+  max-height: 600px;
 }
 .read-more {
   background: transparent;
@@ -378,7 +407,9 @@ body {
   background: transparent;
   color: var(--text);
   outline: none;
-  transition: transform 0.16s, box-shadow 0.16s;
+  transition:
+    transform 0.16s,
+    box-shadow 0.16s;
 }
 .contact-form input:focus,
 .contact-form textarea:focus {
@@ -409,16 +440,6 @@ body {
   to {
     transform: rotate(360deg);
   }
-}
-
-/* form status styling */
-.form-status {
-  margin-top: 0.5rem;
-  font-weight: 600;
-  color: var(--accent);
-}
-.form-status.error {
-  color: #ff6b6b;
 }
 
 /* ---------------- Footer ---------------- */
@@ -453,14 +474,49 @@ body {
 }
 
 /* ---------------- Reveal animations ---------------- */
+/* Reveal: opacity-only to guarantee zero layout movement */
 .reveal {
   opacity: 0;
-  transform: translateY(26px);
-  transition: all 0.65s cubic-bezier(0.2, 0.9, 0.2, 1);
+  transform: none; /* do not translate */
+  transition: opacity var(--reveal-duration) var(--reveal-ease);
+  will-change: opacity;
 }
 .reveal.active {
   opacity: 1;
+}
+
+/* lead: keep reserved height, reveal via opacity only */
+.lead.reveal {
   transform: none;
+}
+
+/* typing: reveal via opacity; width reserved via --typing-min */
+.typing.reveal {
+  transform: none;
+}
+
+/* Hero children: opacity-only reveals to prevent any movement */
+.hero .reveal {
+  transform: none;
+  transition-duration: var(--reveal-duration);
+}
+
+/* Avatar: use scale+opacity for entrance (visual only, no layout change) */
+.hero .hero-avatar.reveal {
+  transform: scale(0.98);
+  opacity: 0;
+  transition:
+    opacity var(--reveal-duration) var(--reveal-ease),
+    transform var(--reveal-duration) var(--reveal-ease);
+}
+.hero .hero-avatar.reveal.active {
+  transform: none;
+  opacity: 1;
+}
+
+/* ensure hero text has reserved vertical space so reveal won't change layout */
+.hero-text {
+  min-height: 4.2rem; /* adjust if your headline/lead are taller */
 }
 
 /* ---------------- Small screens & accessibility ---------------- */
@@ -474,6 +530,18 @@ body {
   }
   .topnav {
     gap: 0.4rem;
+  }
+}
+
+/* hide topnav for small mobile widths between 320px and 425px (inclusive) */
+@media (min-width: 320px) and (max-width: 425px) {
+  .topnav {
+    display: none;
+  }
+  /* keep brand layout stable on very small screens */
+  .brand {
+    min-width: auto;
+    padding-left: 0.6rem;
   }
 }
 .muted {
