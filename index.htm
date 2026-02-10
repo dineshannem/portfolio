@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ANNEM DINESH KUMAR REDDY — Portfolio</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <!-- Sidebar Toggle -->
@@ -12,8 +12,6 @@
       class="corner-btn"
       id="cornerBtn"
       aria-label="open menu"
-      aria-controls="sidebar"
-      aria-expanded="false"
       onclick="toggleSidebar()"
     >
       ☰
@@ -22,27 +20,30 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar" aria-hidden="true">
       <button
+        type="button"
         class="close-sidebar"
         aria-label="close"
         onclick="toggleSidebar()"
       >
         ✕
       </button>
-
       <div class="sidebar-header reveal">
-        <img src="profile.jpg" alt="Dinesh photo" class="sidebar-avatar" />
+        <img
+          src="profile.jpg"
+          alt="Dinesh photo"
+          class="sidebar-avatar"
+          width="64"
+          height="64"
+        />
         <div class="sidebar-meta">
           <h3>ANNEM DINESH<br />KUMAR REDDY</h3>
           <p class="muted">Full-Stack Developer</p>
         </div>
       </div>
-
       <hr class="sidebar-separator" />
-
       <nav class="sidebar-nav reveal">
         <a href="#about" onclick="toggleSidebar()">About</a>
         <a href="#skills" onclick="toggleSidebar()">Skills</a>
-        <a href="#interests" onclick="toggleSidebar()">Interests</a>
         <a href="#internships" onclick="toggleSidebar()">Certifications</a>
         <a href="#projects" onclick="toggleSidebar()">Projects</a>
         <a href="#achievements" onclick="toggleSidebar()">Achievements</a>
@@ -61,20 +62,14 @@
       <nav class="topnav">
         <a href="#about" class="navlink">About</a>
         <a href="#skills" class="navlink">Skills</a>
-        <a href="#interests" class="navlink">Interests</a>
         <a href="#internships" class="navlink">Certifications</a>
         <a href="#projects" class="navlink">Projects</a>
         <a href="#achievements" class="navlink">Achievements</a>
         <a href="#education" class="navlink">Education</a>
         <a href="#contact" class="navlink">Contact</a>
         <a href="resume.pdf" class="btn ghost" download>Resume</a>
-        <button
-          id="themeToggle"
-          class="theme-btn"
-          aria-label="Toggle theme"
-          title="Toggle theme"
-        >
-          <img id="themeIcon" src="dark.jpg" alt="theme toggle" />
+        <button id="themeToggle" class="theme-btn" aria-label="Toggle theme">
+          🌙
         </button>
       </nav>
     </header>
@@ -82,20 +77,18 @@
     <!-- Hero -->
     <section class="hero reveal">
       <img
-        class="hero-avatar reveal"
-        id="heroAvatar"
-        data-dark-src="profile.jpg"
-        data-light-src="profile.jpg"
         src="profile.jpg"
         alt="profile"
+        class="hero-avatar reveal"
+        width="120"
+        height="120"
       />
       <div class="hero-text">
         <h1>Hi — I’m <span class="accent">Dinesh</span></h1>
-        <p class="typing reveal" aria-hidden="true"></p>
+        <p class="typing reveal"></p>
         <p class="lead reveal">
-          Passionate about building software and embedded solutions that blend
-          performance with usability. I focus on clean, maintainable code and
-          practical systems that solve real problems.
+          Passionate about crafting impactful software and embedded solutions
+          that blend performance and usability.
         </p>
         <div class="cta reveal">
           <a href="#projects" class="btn primary">Explore My Work</a>
@@ -108,20 +101,13 @@
     <section id="about" class="section reveal">
       <h2 class="section-title">About Me</h2>
       <p>
-        I am a motivated Full-Stack Developer with a strong background in
-        Electronics & Communication Engineering and hands-on experience in both
-        software and embedded systems. I have solid working knowledge of Python,
-        HTML, CSS, JavaScript, and MySQL, and foundation-level skills in C and
-        data structures. I enjoy applying programming, electronics, and image
-        processing to solve practical problems — for example, projects that
-        perform data acquisition, processing, and visual presentation.
-      </p>
-      <p>
-        Outside of technical work I stay curious and continuously learn by
-        reading news, watching technical talks and movies, and experimenting
-        with new tools. I value clear communication, teamwork, and methodical
-        problem-solving — skills I bring to hackathons, internships, and open
-        source contributions.
+        I am a motivated <b>Full-Stack Developer</b> with a strong foundation in
+        <b>Electronics and Communication Engineering</b>. Skilled in
+        <b>HTML, CSS, JavaScript, Python, MySQL, and Embedded Systems</b>, I
+        bridge hardware and software to build scalable solutions. <br /><br />
+        I love solving real-world problems, exploring new technologies, and
+        designing software that makes life easier. Outside of coding, I actively
+        participate in hackathons, open-source projects, and tech workshops.
       </p>
     </section>
 
@@ -134,26 +120,8 @@
         <span class="chip">Python</span>
         <span class="chip">MySQL</span>
         <span class="chip">Git & GitHub</span>
-        <span class="chip">OpenCV / Image Processing</span>
-        <span class="chip">Embedded Systems</span>
-        <span class="chip">C & Data Structures (Basics)</span>
-      </div>
-    </section>
-
-    <!-- Interests & Social Skills -->
-    <section id="interests" class="section reveal">
-      <h2 class="section-title">Interests & Social Skills</h2>
-      <div class="chips">
-        <span class="chip">Watching news & movies</span>
-        <span class="chip">Listening to music</span>
-        <span class="chip">Browsing the net</span>
-        <span class="chip">Willingness to learn & work</span>
-        <span class="chip">Problem solving</span>
-        <span class="chip">Leadership</span>
-        <span class="chip">Time Management</span>
-        <span class="chip">Communication</span>
-        <span class="chip">Patience</span>
-        <span class="chip">Quick learner</span>
+        <span class="chip">OpenCV</span>
+        <span class="chip">Embedded Systems (Arduino, Raspberry Pi)</span>
       </div>
     </section>
 
@@ -175,158 +143,55 @@
     <!-- Projects -->
     <section id="projects" class="section reveal">
       <h2 class="section-title">Projects</h2>
-      <!-- Projects -->
 
       <article class="project-card reveal">
-        <h3>Underwater Image Enhancement</h3>
+        <h3>🌊 Underwater Image Enhancement</h3>
         <p class="brief">
-          Enhanced underwater photos using Fourier- and spatial-domain methods,
-          plus CNN-based post-processing to restore color and detail.
+          Enhanced underwater photos using advanced image-processing techniques.
         </p>
-        <div class="more" data-open="false">
+        <div class="more" data-collapsed>
           <p>
-            Implemented a multi-stage pipeline targeting the common problems of
-            underwater imagery: color cast, reduced contrast, blurring caused by
-            scattering, and loss of fine detail. The first stage performs white
-            balance and color normalization using histogram-based methods to
-            reduce dominant blue/green hues.
-          </p>
-          <p>
-            Next, a frequency-domain upsampling routine preserves high-frequency
-            edges while increasing apparent resolution. Spatial domain filters
-            (adaptive sharpening and dehazing priors) reduce haze and enhance
-            edges without introducing ringing artifacts.
-          </p>
-          <p>
-            A lightweight CNN was trained on paired degraded/clean examples to
-            refine contrast and texture. Training used data augmentation
-            (brightness, blur, and noise) to increase robustness to real-world
-            underwater conditions.
-          </p>
-          <p>
-            I evaluated results with objective metrics (PSNR, SSIM) and
-            perceptual checks. For deployment, the pipeline is optimized for CPU
-            inference and includes options to balance speed vs. fidelity.
-          </p>
-          <p>
-            Tools & libraries: Python, OpenCV, NumPy, TensorFlow/Keras, and
-            custom Fourier routines. Results show visible restoration of color
-            and improved detail in coral and underwater scenes.
+            Implemented Fourier and spatial domain upsampling using a custom
+            Spectroformer pipeline. Applied white balance correction, dehazing,
+            sharpening, and CNN-based enhancement. Evaluated performance using
+            <b>PSNR</b> and <b>SSIM</b>. Tools:
+            <b>Python, OpenCV, TensorFlow</b>.
           </p>
         </div>
-        <button class="read-more" aria-expanded="false">Read more</button>
+        <button class="read-more">Read more</button>
       </article>
 
       <article class="project-card reveal">
-        <h3>Soil Irrigation System using 8051</h3>
+        <h3>💧 Soil Irrigation System using 8051</h3>
         <p class="brief">
-          A microcontroller-based irrigation controller that automates watering
-          based on real-time soil-moisture measurements.
+          Automated irrigation using soil-moisture sensors and microcontrollers.
         </p>
-        <div class="more" data-open="false">
+        <div class="more" data-collapsed>
           <p>
-            Designed and implemented an embedded controller using the 8051
-            microcontroller family to manage irrigation pumps and valves based
-            on analog soil moisture sensor inputs and configurable thresholds.
-          </p>
-          <p>
-            The system performs on-device calibration for sensor variability and
-            uses hysteresis to avoid frequent on/off cycling of pumps,
-            increasing hardware longevity and saving water.
-          </p>
-          <p>
-            A simple UART interface and an LCD status display provide local
-            monitoring; for advanced versions the design includes an optional
-            wireless module to send telemetry to a PC or mobile app.
-          </p>
-          <p>
-            Power-management features (sleep modes and low-power sampling)
-            reduce energy consumption for battery-backed or solar-powered
-            installations. Safety features include pump-failure detection and
-            manual override input.
-          </p>
-          <p>
-            Tools used: 8051 assembly and Embedded C for firmware, Proteus for
-            simulation, and prototyping with breadboarded sensors and relays.
-            Achieved reliable automated watering cycles and reduced water use in
-            test plots.
+            Built a microcontroller-based irrigation controller using the 8051
+            chip. Sensors detect soil moisture levels, and pumps are triggered
+            automatically. Reduced water waste and improved efficiency. Tools:
+            <b>8051 Assembly, Proteus, Embedded C</b>.
           </p>
         </div>
-        <button class="read-more" aria-expanded="false">Read more</button>
+        <button class="read-more">Read more</button>
       </article>
 
       <article class="project-card reveal">
-        <h3>Personal Portfolio Website</h3>
+        <h3>🖥️ Personal Portfolio Website</h3>
         <p class="brief">
-          A responsive portfolio showcasing projects, skills, and contact forms,
-          built for clarity and accessibility.
+          Designed a responsive personal portfolio to showcase skills and
+          projects.
         </p>
-        <div class="more" data-open="false">
+        <div class="more" data-collapsed>
           <p>
-            Built the portfolio using vanilla HTML, CSS, and JavaScript to keep
-            load times minimal and to ensure full control over responsive
-            behaviour. Emphasis placed on accessibility (semantic HTML and ARIA
-            attributes) and progressive enhancement so the site works without
-            JS.
-          </p>
-          <p>
-            Features include a sticky top navigation, an accessible slide-in
-            sidebar with focus management, a theme toggle (light/dark) with
-            persistent preference, reveal-on-scroll animations, and an AJAX
-            contact form integration using Formspree.
-          </p>
-          <p>
-            The design is mobile-first and thoroughly tested across common
-            screen-sizes. Performance improvements include optimized images,
-            minimized DOM updates, and small JS modules.
-          </p>
-          <p>
-            The codebase is intentionally modular to be easily extended —
-            additional projects, blog posts, or a CMS integration can be added
-            later with minimal changes.
-          </p>
-          <p>
-            This portfolio demonstrates frontend skills, UI/UX thinking, and
-            practical attention to accessibility and performance.
+            Created with <b>HTML, CSS, JavaScript</b>, the site features
+            animations, dark/light mode, and a contact form with Formspree
+            integration. Optimized for all screen sizes, this project
+            demonstrates frontend design and UI/UX skills.
           </p>
         </div>
-        <button class="read-more" aria-expanded="false">Read more</button>
-      </article>
-
-      <!-- Existing 3 projects are same as before -->
-      <!-- New 4th Project -->
-      <article class="project-card reveal">
-        <h3>Concrete pipes</h3>
-        <p class="brief">
-          An overview study of concrete pipes, their durability, and their
-          importance in modern infrastructure projects.
-        </p>
-        <div class="more" data-open="false">
-          <p>
-            Conducted a detailed study on the use of Concrete Spun Pipes (CSP)
-            in drainage systems, culverts, irrigation, and urban infrastructure.
-            Highlighted their long service life compared to alternative
-            materials due to their natural resistance to corrosion, abrasion,
-            and environmental damage. Reviewed manufacturing processes including
-            centrifugal spinning, curing, and reinforcement that improve
-            structural strength. Analyzed how reinforced concrete pipes
-            withstand heavy soil loads and traffic pressure in underground
-            installations. Studied the role of CSP in stormwater management,
-            ensuring proper drainage during heavy rains and reducing flooding
-            risks. Compared CSP with PVC and steel alternatives, noting
-            advantages in sustainability, cost-effectiveness, and load-bearing
-            capacity. Identified challenges such as transportation weight,
-            installation effort, and maintenance requirements in large-scale
-            projects. Investigated how CSP standards (e.g., IS:458 for India)
-            ensure quality, uniformity, and reliability across different
-            projects. Emphasized their environmental contribution, as concrete
-            is locally available, recyclable, and has lower long-term lifecycle
-            costs. Concluded that concrete pipes remain a preferred choice for
-            critical infrastructure due to their strength, durability, and
-            adaptability.
-          </p>
-        </div>
-        <button class="read-more" aria-expanded="false">Read more</button>
+        <button class="read-more">Read more</button>
       </article>
     </section>
 
@@ -345,16 +210,12 @@
       <h2 class="section-title">Education</h2>
       <ul class="list">
         <li>
-          <b>B.Tech (ECE)</b> — SR Gudlavalleru Engineering College (CGPA: 7.93
-          outoff 10)
+          <b>B.Tech (ECE)</b> — SR Gudlavalleru Engineering College (CGPA: 7.93)
         </li>
+        <li><b>Intermediate</b> — Sri Gowthami Junior College (Score: 856)</li>
         <li>
-          <b>Intermediate(MPC)</b> — Sri Gowthami Junior College (Score: 856
-          outoff 1000)
-        </li>
-        <li>
-          <b>Secondary School(Xth Class)</b> — Chegireddy Lingareddy High School
-          (CGPA: 9.8 outoff 10)
+          <b>Secondary School</b> — Chegireddy Lingareddy High School (CGPA:
+          9.8)
         </li>
       </ul>
     </section>
@@ -367,7 +228,6 @@
         class="contact-form reveal"
         action="https://formspree.io/f/mldwelnn"
         method="POST"
-        novalidate
       >
         <input name="name" type="text" placeholder="Your name" required />
         <input name="email" type="email" placeholder="Your email" required />
@@ -377,16 +237,11 @@
           placeholder="Message..."
           required
         ></textarea>
-        <button class="btn primary" type="submit" aria-live="polite">
+        <button class="btn primary" type="submit">
           <span class="label">Send Message</span>
           <span class="spinner"></span>
         </button>
-        <p
-          id="formStatus"
-          class="form-status"
-          role="status"
-          aria-live="polite"
-        ></p>
+        <p id="formStatus" class="form-status"></p>
       </form>
     </section>
 
@@ -399,12 +254,7 @@
         </div>
         <div class="footer-right">
           <a href="mailto:annemdinesh4@gmail.com">📧</a>
-          <a
-            href="https://linkedin.com/in/dinesh-annem"
-            target="_blank"
-            rel="noopener noreferrer"
-            >🔗</a
-          >
+          <a href="https://linkedin.com/in/dinesh-annem" target="_blank">🔗</a>
           <a href="tel:+917989904117">📱</a>
           <p>© <span id="year"></span> All Rights Reserved</p>
         </div>
@@ -414,4 +264,3 @@
     <script src="script.js"></script>
   </body>
 </html>
-
