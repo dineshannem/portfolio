@@ -2,46 +2,58 @@
 const sidebar = document.getElementById("sidebar");
 const cornerBtn = document.getElementById("cornerBtn");
 const themeBtn = document.getElementById("themeToggle");
+const themeIcon = document.getElementById("themeIcon");
+const heroAvatar = document.getElementById("heroAvatar");
 const form = document.getElementById("contactForm");
 const statusEl = document.getElementById("formStatus");
 const yearEl = document.getElementById("year");
 
-/* ---------------- Sidebar open/close + outside click ---------------- */
+/* ---------------- Sidebar open/close + outside click + accessibility ---------------- */
+const headerEl = document.querySelector(".topbar");
+
+function setCornerIcon(opened) {
+  if (!cornerBtn) return;
+  // when opened show an X, otherwise show hamburger
+  cornerBtn.textContent = opened ? "✕" : "☰";
+}
+
 function toggleSidebar() {
+  if (!sidebar) return;
   const opened = sidebar.classList.toggle("open");
-  // ensure attribute value is a string 'true'/'false'
   sidebar.setAttribute("aria-hidden", String(!opened));
-  // hide the corner (hamburger) button while sidebar is open so the three lines become invisible
-  if (cornerBtn) cornerBtn.classList.toggle("hidden", opened);
+  cornerBtn && cornerBtn.setAttribute("aria-expanded", String(opened));
+  setCornerIcon(opened);
+  // Add a body class for open state so CSS can adjust UI on larger screens.
+  try {
+    document.body.classList.toggle("sidebar-open", opened);
+  } catch (e) {}
+
+  // Move corner button to the opposite edge only on small screens. On
+  // larger screens we'll position the button inside the opened sidebar via CSS.
+  if (cornerBtn) {
+    const isSmall = window.matchMedia("(max-width: 640px)").matches;
+    if (opened && isSmall) cornerBtn.classList.add("opposite");
+    else cornerBtn.classList.remove("opposite");
+  }
+
+  // lock body scroll when sidebar is open to avoid background shifting on small screens
+  try {
+    document.body.style.overflow = opened ? "hidden" : "";
+  } catch (e) {
+    /* ignore in restrictive environments */
+  }
+
+  if (opened) {
+    // focus first interactive element in sidebar
+    const focusable = sidebar.querySelector(
+      'a, button, input, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    focusable && focusable.focus();
+  } else {
+    cornerBtn && cornerBtn.focus();
+  }
 }
 window.toggleSidebar = toggleSidebar;
-
-// Defensive: attach handlers to any `.close-sidebar` buttons so the X reliably closes
-// the sidebar even if an inline handler is missed or JS is evaluated in a different order.
-document.querySelectorAll(".close-sidebar").forEach((btn) => {
-  // ensure it's a real button and not in a form submit context
-  btn.type = btn.type || "button";
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    // ensure sidebar is closed
-    if (sidebar && sidebar.classList.contains("open")) {
-      toggleSidebar();
-    } else {
-      // if for some reason sidebar isn't marked open, still ensure aria-hidden correct
-      sidebar && sidebar.setAttribute("aria-hidden", "true");
-      cornerBtn && cornerBtn.classList.remove("hidden");
-    }
-  });
-});
-
-// Close sidebar with Escape key for better UX
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" || e.key === "Esc") {
-    if (sidebar && sidebar.classList.contains("open")) {
-      toggleSidebar();
-    }
-  }
-});
 
 // Close when clicking outside (but ignore clicks on the corner button)
 document.addEventListener("click", (e) => {
@@ -49,28 +61,50 @@ document.addEventListener("click", (e) => {
   const clickInside =
     sidebar.contains(e.target) || cornerBtn.contains(e.target);
   if (!clickInside) {
-    sidebar.classList.remove("open");
-    sidebar.setAttribute("aria-hidden", "true");
-    // restore corner button visibility when sidebar closes
-    if (cornerBtn) cornerBtn.classList.remove("hidden");
+    // Reuse the toggle so all state changes (body class, overflow,
+    // aria attributes and icon) happen consistently.
+    toggleSidebar();
   }
 });
 
-/* ---------------- Theme toggle with persistence ---------------- */
+// Close on Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && sidebar.classList.contains("open")) toggleSidebar();
+});
+
+/* ---------------- Theme toggle with persistence & image switching ---------------- */
 const root = document.documentElement;
-function setTheme(theme) {
-  root.setAttribute("data-theme", theme);
-  if (themeBtn) themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
-  localStorage.setItem("site-theme", theme);
+
+function updateHeaderThemeImage(theme) {
+  // Only update the small theme icon when header theme changes
+  if (!themeIcon) return;
+  themeIcon.src =
+    theme === "dark"
+      ? themeIcon.dataset.dark || "dark.jpg"
+      : themeIcon.dataset.light || "light.jpg";
+  themeIcon.alt = theme + " theme";
 }
-themeBtn &&
+
+function setHeaderTheme(theme) {
+  if (!headerEl) return;
+  headerEl.setAttribute("data-header-theme", theme);
+  localStorage.setItem("header-theme", theme);
+  updateHeaderThemeImage(theme);
+}
+
+if (themeBtn) {
   themeBtn.addEventListener("click", () => {
-    const current = root.getAttribute("data-theme") || "dark";
-    setTheme(current === "dark" ? "light" : "dark");
+    const current = headerEl
+      ? headerEl.getAttribute("data-header-theme") || "dark"
+      : "dark";
+    setHeaderTheme(current === "dark" ? "light" : "dark");
   });
-// load saved theme
-const saved = localStorage.getItem("site-theme");
-if (saved) setTheme(saved);
+}
+
+// load saved header theme (default dark)
+const savedHeader = localStorage.getItem("header-theme");
+if (savedHeader) setHeaderTheme(savedHeader);
+else setHeaderTheme("dark");
 
 /* ---------------- Reveal-on-scroll (IntersectionObserver) ---------------- */
 const io = new IntersectionObserver(
@@ -78,15 +112,6 @@ const io = new IntersectionObserver(
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add("active");
-        // If this is the typing element, start typing only after it is revealed
-        if (entry.target === typingEl) {
-          // guard to ensure typing starts only once
-          if (!window._typingStarted) {
-            window._typingStarted = true;
-            // small delay so the reveal transition finishes before typing modifies content
-            setTimeout(typeLoop, 400);
-          }
-        }
         io.unobserve(entry.target);
       }
     });
@@ -98,59 +123,17 @@ document.querySelectorAll(".reveal").forEach((node) => io.observe(node));
 
 /* ---------------- Typing effect ---------------- */
 const typingEl = document.querySelector(".typing");
-const roles = ["Full Stack Developer", "Problem Solver", "Quick Learner"];
+const roles = [
+  "Full Stack Developer",
+  "Problem Solver",
+  "Quick Learner",
+  "Willing to learn & work",
+  "Time Management",
+  "Leadership Skills",
+];
 let ridx = 0,
   cidx = 0,
   ttimeout;
-
-// measure the longest role and set exact min-width (px) on the typing element
-function setTypingMinWidth() {
-  if (!typingEl || !roles || !roles.length) return;
-  // create a hidden span that inherits the typing element's font
-  const span = document.createElement("span");
-  span.style.position = "absolute";
-  span.style.visibility = "hidden";
-  span.style.whiteSpace = "nowrap";
-  // copy computed font styles from typingEl
-  const cs = window.getComputedStyle(typingEl);
-  span.style.font = cs.font;
-  span.style.fontSize = cs.fontSize;
-  span.style.fontWeight = cs.fontWeight;
-  document.body.appendChild(span);
-
-  let maxW = 0;
-  let maxH = 0;
-  roles.forEach((r) => {
-    span.textContent = r;
-    const w = span.getBoundingClientRect().width;
-    const h = span.getBoundingClientRect().height;
-    if (w > maxW) maxW = w;
-    if (h > maxH) maxH = h;
-  });
-
-  document.body.removeChild(span);
-  // add a small padding buffer (14px) for safe headroom
-  const minPx = Math.ceil(maxW + 14) + "px";
-  // set CSS variable so min-width is applied via stylesheet before reveal
-  try {
-    document.documentElement.style.setProperty("--typing-min", minPx);
-    // set a min-height (px) so the typing area occupies vertical space even when empty
-    const minHpx = Math.ceil(maxH + 6) + "px"; // small buffer for line-height differences
-    document.documentElement.style.setProperty("--typing-min-height", minHpx);
-  } catch (err) {
-    // fallback to inline style if CSS variable cannot be set
-    typingEl.style.minWidth = minPx;
-    // fallback for minHeight too
-    typingEl.style.minHeight = Math.ceil(maxH + 6) + "px";
-  }
-}
-
-// set min-width as early as possible
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", setTypingMinWidth);
-} else {
-  setTypingMinWidth();
-}
 
 function typeLoop() {
   if (!typingEl) return;
@@ -173,17 +156,25 @@ function eraseLoop() {
     setTimeout(typeLoop, 300);
   }
 }
-// typing now starts when the typing element is revealed by the observer (see above)
+document.addEventListener("DOMContentLoaded", () => setTimeout(typeLoop, 400));
 
-/* ---------------- Project Read More toggles ---------------- */
+/* ---------------- Project Read More toggles (improved, accessible) ---------------- */
 document.querySelectorAll(".project-card").forEach((card) => {
   const btn = card.querySelector(".read-more");
   const more = card.querySelector(".more");
   if (!btn || !more) return;
+
+  // Ensure there is a data-open attribute
+  if (!more.hasAttribute("data-open")) more.setAttribute("data-open", "false");
+
+  // Accessibility
+  btn.setAttribute("aria-expanded", "false");
+
   btn.addEventListener("click", () => {
     const open = more.getAttribute("data-open") === "true";
     more.setAttribute("data-open", open ? "false" : "true");
     btn.textContent = open ? "Read more" : "Read less";
+    btn.setAttribute("aria-expanded", String(!open));
   });
 });
 
@@ -192,9 +183,11 @@ if (form) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!statusEl) return;
+    statusEl.classList.remove("error");
     statusEl.textContent = "";
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn && submitBtn.classList.add("loading");
+    submitBtn && (submitBtn.disabled = true);
 
     try {
       const data = new FormData(form);
@@ -205,27 +198,25 @@ if (form) {
       });
       if (res.ok) {
         statusEl.textContent =
-          "✅  Thank you --Message sent — dinesh will respond very shortly .";
+          " Thank you — message sent. Dinesh will respond shortly as soon as possible .";
         form.reset();
       } else {
         const json = await res.json().catch(() => ({}));
-        statusEl.textContent =
+        const errMsg =
           json?.errors?.map((x) => x.message).join(", ") ||
           "⚠️ Submission failed. Try again.";
+        statusEl.textContent = errMsg;
+        statusEl.classList.add("error");
       }
     } catch (err) {
       statusEl.textContent = "⚠️ Network error. Try again.";
+      statusEl.classList.add("error");
     } finally {
       submitBtn && submitBtn.classList.remove("loading");
+      submitBtn && (submitBtn.disabled = false);
     }
   });
 }
 
 /* ---------------- Footer year ---------------- */
 if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-// if the sidebar is pre-open (unlikely) ensure corner button hidden state syncs
-if (sidebar && cornerBtn) {
-  const opened = sidebar.classList.contains("open");
-  cornerBtn.classList.toggle("hidden", opened);
-}
