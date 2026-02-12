@@ -2,12 +2,6 @@
 :root {
   --bg: #0d1117;
   --panel: #12151b;
-  /* header background (slightly more opaque to avoid visual overlap) */
-  --header-bg: rgba(18, 21, 27, 0.96);
-  /* animation tokens */
-  --reveal-duration: 620ms;
-  --reveal-ease: cubic-bezier(0.2, 0.9, 0.2, 1);
-  --reveal-offset: 10px;
   --muted: #9aa4ad;
   --text: #e6edf3;
   --accent: #58a6ff;
@@ -49,27 +43,27 @@ body {
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 80; /* keep below the sidebar which overlaps */
+  z-index: 90;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
   gap: 2.5rem;
-  /* stronger header background so it doesn't visually blend/overlap with the sidebar */
-  background: linear-gradient(180deg, var(--header-bg), rgba(0, 0, 0, 0));
+  background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0));
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 .brand {
   display: flex;
-  background-color: #d0d3d600;
   flex-direction: column;
   min-width: 260px;
+  /* ensure the brand doesn't sit under the corner button */
+  margin-left: 44px;
 }
+
 .brand-name {
   font-weight: 800;
   letter-spacing: 0.4px;
   font-size: 1rem;
-  border-left: 120rem;
   padding-left: 3rem;
 }
 .brand-sub {
@@ -102,6 +96,9 @@ body {
   cursor: pointer;
   text-decoration: none;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .btn.ghost {
   background: transparent;
@@ -114,13 +111,13 @@ body {
   border: none;
 }
 
-/* Theme toggle (circle) */
+/* Theme toggle (circle with image) */
 .theme-btn {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   border: none;
-  background: var(--accent);
+  background: var(--panel);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -128,6 +125,13 @@ body {
   transition:
     transform 0.22s,
     box-shadow 0.22s;
+  padding: 6px;
+}
+.theme-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 .theme-btn:hover {
   transform: scale(1.06);
@@ -135,11 +139,14 @@ body {
 }
 
 /* ---------------- Corner button & sidebar ---------------- */
+/* Place the corner button inside the header (absolute) so it doesn't
+   overlap hero content. It will visually sit at the left of the topbar. */
 .corner-btn {
+  /* fixed at the top-left corner of the viewport as requested */
   position: fixed;
-  left: 14px;
-  top: 14px;
-  z-index: 100;
+  left: 12px;
+  top: 12px;
+  z-index: 120;
   padding: 0.45rem 0.6rem;
   border-radius: 0.6rem;
   border: none;
@@ -148,31 +155,51 @@ body {
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38);
 }
-/* when hidden (sidebar open), make the corner button invisible and non-interactive */
-.corner-btn.hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-6px) scale(0.98);
-  transition:
-    opacity 0.28s ease,
-    transform 0.28s ease;
+
+/* When the nav is opened, move the corner button to the opposite side
+   (right) so the cross appears on the opposite edge. On very small screens
+   offset it a bit to avoid colliding with the theme toggle. */
+.corner-btn.opposite {
+  left: auto !important;
+  right: 12px !important;
+}
+@media (max-width: 640px) {
+  .corner-btn.opposite {
+    /* push inward slightly to avoid overlapping the theme toggle at right */
+    right: 56px !important;
+  }
+}
+
+/* On larger screens, when the sidebar is open, position the corner button
+   just inside the right edge of the sidebar so it doesn't overlap header
+   content (avatar/topnav). The left value uses the same width formula as
+   the sidebar (min(320px, 86vw)) minus an offset to place the button inside. */
+@media (min-width: 641px) {
+  body.sidebar-open .corner-btn {
+    left: calc(min(320px, 86vw) - 44px) !important;
+    top: 16px !important;
+    transform: none !important;
+  }
 }
 .sidebar {
   position: fixed;
-  left: -360px;
+  left: 0;
   top: 0;
-  width: 320px;
+  /* responsive width: never exceed 320px but fit smaller screens */
+  width: min(320px, 86vw);
   height: 100vh;
   background: var(--panel);
   padding: 1rem;
   border-right: 1px solid rgba(255, 255, 255, 0.03);
   z-index: 98;
-  transition: left 0.36s cubic-bezier(0.2, 0.9, 0.2, 1);
+  /* slide-in using transform so the hidden state doesn't create layout gaps */
+  transform: translateX(-100%);
+  transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.2, 1);
   box-shadow: 30px 0 80px rgba(0, 0, 0, 0.55);
   overflow: auto;
 }
 .sidebar.open {
-  left: 0;
+  transform: translateX(0);
 }
 .close-sidebar {
   position: absolute;
@@ -183,8 +210,6 @@ body {
   color: var(--muted);
   font-size: 18px;
   cursor: pointer;
-  /* ensure the close control is above other sidebar content and clickable */
-  z-index: 220;
 }
 .sidebar-header {
   display: flex;
@@ -198,7 +223,6 @@ body {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--accent);
-  display: block;
 }
 .sidebar-meta h3 {
   margin: 0;
@@ -230,6 +254,20 @@ body {
   color: var(--accent);
 }
 
+/* Sidebar skills block */
+.sidebar-skills .sidebar-block {
+  padding: 0.6rem;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.list.compact {
+  margin-left: 1rem;
+  color: var(--muted);
+  padding-left: 0.3rem;
+  font-size: 0.95rem;
+}
+
 /* ---------------- Hero ---------------- */
 .hero {
   display: grid;
@@ -248,7 +286,6 @@ body {
   object-fit: cover;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
   animation: float 3s ease-in-out infinite;
-  display: block;
 }
 @keyframes float {
   0%,
@@ -266,26 +303,6 @@ body {
 .lead {
   color: var(--muted);
   margin-top: 0.25rem;
-  /* reserve vertical space to avoid layout jump when typing/lead reveal happens */
-  min-height: 2.1rem; /* adjust if your lead spans more lines */
-  transition: opacity 0.45s ease; /* avoid translate-based movement */
-}
-
-/* Typing element: keep a fixed minimum width so the container won't reflow during typing */
-.typing {
-  display: inline-block;
-  /* reserve exact space from JS via --typing-min; fallback to 18ch */
-  min-width: var(--typing-min, 18ch);
-  /* reserve vertical space (set by JS) so adding/removing text doesn't push content
-     - fallback to a single-line height to avoid jumps on small screens */
-  min-height: var(--typing-min-height, 1.2em);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  /* use a monospace fallback to keep character widths stable during typing */
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New",
-    monospace;
 }
 .cta {
   margin-top: 1rem;
@@ -361,10 +378,14 @@ body {
   color: var(--muted);
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.45s ease;
+  transition:
+    max-height 0.45s ease,
+    padding 0.25s ease;
+  padding-top: 0;
 }
 .more[data-open="true"] {
-  max-height: 600px;
+  max-height: 1000px;
+  padding-top: 0.6rem;
 }
 .read-more {
   background: transparent;
@@ -442,6 +463,16 @@ body {
   }
 }
 
+/* form status styling */
+.form-status {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.form-status.error {
+  color: #ff6b6b;
+}
+
 /* ---------------- Footer ---------------- */
 .footer {
   padding: 2rem 1rem;
@@ -474,49 +505,30 @@ body {
 }
 
 /* ---------------- Reveal animations ---------------- */
-/* Reveal: opacity-only to guarantee zero layout movement */
 .reveal {
   opacity: 0;
-  transform: none; /* do not translate */
-  transition: opacity var(--reveal-duration) var(--reveal-ease);
-  will-change: opacity;
+  transform: translateY(26px);
+  /* Animate only opacity & transform to avoid layout shifts */
+  transition:
+    opacity 0.65s cubic-bezier(0.2, 0.9, 0.2, 1),
+    transform 0.65s cubic-bezier(0.2, 0.9, 0.2, 1);
+  will-change: opacity, transform;
 }
 .reveal.active {
   opacity: 1;
+  transform: translateY(0);
 }
 
-/* lead: keep reserved height, reveal via opacity only */
-.lead.reveal {
-  transform: none;
-}
-
-/* typing: reveal via opacity; width reserved via --typing-min */
-.typing.reveal {
-  transform: none;
-}
-
-/* Hero children: opacity-only reveals to prevent any movement */
-.hero .reveal {
-  transform: none;
-  transition-duration: var(--reveal-duration);
-}
-
-/* Avatar: use scale+opacity for entrance (visual only, no layout change) */
-.hero .hero-avatar.reveal {
-  transform: scale(0.98);
-  opacity: 0;
-  transition:
-    opacity var(--reveal-duration) var(--reveal-ease),
-    transform var(--reveal-duration) var(--reveal-ease);
-}
-.hero .hero-avatar.reveal.active {
-  transform: none;
-  opacity: 1;
-}
-
-/* ensure hero text has reserved vertical space so reveal won't change layout */
-.hero-text {
-  min-height: 4.2rem; /* adjust if your headline/lead are taller */
+/* Reserve space for the typing line so inserting/removing characters doesn't
+   shift surrounding content. Keeps a constant height and prevents jumps. */
+.typing {
+  display: block;
+  /* Reserve space for up to two wrapped lines of the typing text to avoid
+     jumps on narrow screens. Adjust if you use larger fonts. */
+  min-height: 2.2em;
+  line-height: 1.1em;
+  white-space: normal; /* allow wrapping on small screens */
+  overflow: hidden;
 }
 
 /* ---------------- Small screens & accessibility ---------------- */
@@ -532,16 +544,160 @@ body {
     gap: 0.4rem;
   }
 }
+.topbar[data-header-theme="light"] {
+  background: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.96));
+  color: var(--text);
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+.topbar[data-header-theme="light"] .navlink {
+  color: #0f172a;
+}
+.topbar[data-header-theme="light"] .brand-name,
+.topbar[data-header-theme="light"] .brand-sub {
+  color: #0f172a;
+}
 
-/* hide topnav for small mobile widths between 320px and 425px (inclusive) */
-@media (min-width: 320px) and (max-width: 425px) {
+/* Responsive breakpoints: s, m, l, tablet, laptop, desktop */
+/* s: up to 360px, m: up to 480px, l: up to 640px, tablet: up to 900px, laptop: up to 1200px, desktop: 1200+ */
+@media (max-width: 360px) {
+  html {
+    font-size: 14px;
+  }
+  .hero-avatar {
+    width: 88px;
+    height: 88px;
+  }
+}
+@media (min-width: 361px) and (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
+  .hero-avatar {
+    width: 96px;
+    height: 96px;
+  }
+}
+@media (min-width: 481px) and (max-width: 640px) {
+  html {
+    font-size: 15.5px;
+  }
+  .hero {
+    padding: 3.6rem 1rem;
+  }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  /* tablet */
   .topnav {
     display: none;
   }
-  /* keep brand layout stable on very small screens */
+  .corner-btn {
+    display: block;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 901px) and (max-width: 1200px) {
+  /* laptop */
+  html {
+    font-size: 16px;
+  }
+  .hero {
+    grid-template-columns: 100px 1fr;
+  }
+  /* show hamburger on laptop sizes and hide full topnav to match tablet behavior */
+  .topnav {
+    display: none;
+  }
+  .corner-btn {
+    display: block;
+  }
+}
+@media (min-width: 1201px) {
+  /* desktop */
+  html {
+    font-size: 16px;
+  }
+  .topnav {
+    display: flex;
+  }
+  /* keep corner button visible on desktop too per user request */
+  .corner-btn {
+    display: block;
+  }
+}
+
+/* Hide the internal close button in the sidebar so only the corner button
+   serves as the single control (one cross) when the nav is open. */
+.close-sidebar {
+  display: none;
+}
+
+/* When the sidebar is open, hide the corner button (so it doesn't sit on top
+   of the avatar) and show the internal close button inside the sidebar. This
+   guarantees only one visible '✕' control and prevents overlap with content. */
+/* (Removed sidebar-open rules - corner button stays visible at top-left and
+   the internal close button remains hidden so the single control is always
+   the corner button which toggles to a cross when open.) */
+
+/* Mobile: show only brand (name + designation) and the theme button in the
+   header. Hide other nav links and remove left padding so there's no empty
+   space reserved. Applies to small phones and small/medium breakpoints. */
+@media (max-width: 640px) {
+  /* Small screens: center the brand (name + designation) to avoid overlap
+     with the corner button. Position corner button at left and theme at
+     right so header remains compact and symmetric. */
+  .topbar {
+    position: relative;
+    padding: 0.6rem 1rem;
+  }
   .brand {
-    min-width: auto;
-    padding-left: 0.6rem;
+    min-width: 0;
+    align-items: center;
+    margin-left: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+  .brand-name,
+  .brand-sub {
+    padding-left: 0;
+    text-align: center;
+  }
+  /* Hide inline nav links and ghost resume button, keep only the theme button */
+  .topnav .navlink,
+  .topnav .btn.ghost,
+  .topnav .cta-extra {
+    display: none;
+  }
+  /* Ensure the theme toggle remains visible */
+  /* place the theme toggle at the right edge of the header */
+  #themeToggle {
+    display: inline-grid;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 115;
+  }
+  /* ensure corner button sits on the left inside the header */
+  .corner-btn {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 120;
+  }
+  /* Slightly reduce topbar padding to remove extra empty vertical space */
+  .topbar {
+    padding: 0.6rem 1rem;
+  }
+
+  /* When sidebar opens on small screens, make the nav list start nearer
+     the top so links appear immediately under the close control. */
+  .sidebar {
+    padding-top: 1rem;
   }
 }
 .muted {
